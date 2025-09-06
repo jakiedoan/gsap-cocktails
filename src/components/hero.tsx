@@ -126,8 +126,8 @@ const Hero = () => {
           ref={videoRef}
           muted
           playsInline
-          preload='metadata'
-          src='/videos/output.mp4'
+          preload='auto'
+          src='/videos/optimized.mp4'
         />
       </div>
     </>
