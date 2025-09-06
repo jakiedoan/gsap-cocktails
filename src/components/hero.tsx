@@ -10,15 +10,11 @@ const Hero = () => {
   const isMobile = useMediaQuery({ maxWidth: 767 });
 
   useGSAP(() => {
-    const heroSplit = new SplitText('.title', {
-      type: 'chars, words',
-    });
+    // --- TEXT ANIMATIONS ---
+    const heroSplit = new SplitText('.title', { type: 'chars, words' });
+    const paragraphSplit = new SplitText('.subtitle', { type: 'lines' });
 
-    const paragraphSplit = new SplitText('.subtitle', {
-      type: 'lines',
-    });
-
-    // Apply text-gradient class once before animating
+    // Add gradient class cho từng char trước khi animate
     heroSplit.chars.forEach((char) => char.classList.add('text-gradient'));
 
     gsap.from(heroSplit.chars, {
@@ -37,6 +33,7 @@ const Hero = () => {
       delay: 1,
     });
 
+    // --- HERO LEAVES + ARROW ---
     gsap
       .timeline({
         scrollTrigger: {
@@ -50,24 +47,37 @@ const Hero = () => {
       .to('.left-leaf', { y: -200 }, 0)
       .to('.arrow', { y: 100 }, 0);
 
+    // --- VIDEO ANIMATION ---
+    const video = videoRef.current;
+    if (!video) return;
+
     const startValue = isMobile ? 'top 50%' : 'center 60%';
     const endValue = isMobile ? '120% top' : 'bottom top';
 
-    let tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: 'video',
-        start: startValue,
-        end: endValue,
-        scrub: true,
-        pin: true,
-      },
-    });
-
-    if (videoRef.current) {
-      videoRef.current.onloadedmetadata = () => {
-        tl.to(videoRef.current, {
-          currentTime: videoRef.current?.duration,
+    const initVideoAnimation = () => {
+      gsap
+        .timeline({
+          scrollTrigger: {
+            trigger: video,
+            start: startValue,
+            end: endValue,
+            scrub: true,
+            pin: true,
+          },
+        })
+        .to(video, {
+          currentTime: video.duration || 1, // fallback nếu duration = 0
+          ease: 'none', // giữ mượt, sync scroll <-> video
         });
+    };
+
+    // Nếu metadata đã sẵn sàng → chạy luôn
+    if (video.readyState >= 1) {
+      initVideoAnimation();
+    } else {
+      // Nếu chưa, chờ load xong mới init
+      video.onloadedmetadata = () => {
+        initVideoAnimation();
       };
     }
   }, []);
